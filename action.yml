@@ -20,10 +20,10 @@ inputs:
 outputs:
   summary:
     description: "High level info (number of files checked and number of offenses) from rubocop"
-    value: ${{ steps.run_rubocop.outputs.summary }}
+    value: ${{ steps.analyze_rubocop.outputs.summary }}
   all_output:
     description: "High level info and all annotations from rubocop"
-    value: ${{ steps.run_rubocop.outputs.all_output }}
+    value: ${{ steps.analyze_rubocop.outputs.all_output }}
   rubocop_was_installed:
     description: "For testing purposes mostly, see if rubocop was installed by the action (true) or already installed (false)"
     value: ${{ steps.check_rubocop_installed.outputs.rubocop_was_installed }}
@@ -45,6 +45,7 @@ runs:
       id: check_rubocop_installed
       shell: bash
       run: |
+        set -x
         if [[ `gem list -i "^rubocop$"` != "true" ]]; then
           echo "gem rubocop is not installed"
           echo "::set-output name=rubocop_was_installed::true"
@@ -54,6 +55,22 @@ runs:
           gem list "^rubocop$"
           echo "::set-output name=rubocop_was_installed::false"
         fi
+        # Windows is ruining my life as usual. Seems like the subprocess.check_call later can't find the rubocop, so try to pass its full path computed from git bash...
+        unameOut="$(uname -s)"
+        case "${unameOut}" in
+            Linux*)     machine=Linux;;
+            Darwin*)    machine=Darwin;;
+            CYGWIN*|MINGW*|MSYS*)    machine=Windows;;
+            *)          machine="UNKNOWN:${unameOut}"
+        esac
+
+        rubocop_path=$(which rubocop)
+        if [[ $machine == Windows ]]; then
+          rubocop_path=$(echo $rubocop_path | sed -e 's/^\///' -e 's/\//\\/g' -e 's/^./\0:/')
+        fi
+        echo "::set-output name=rubocop_path::$rubocop_path"
+        rubocop_bin_path=$(dirname $rubocop_path)
+        echo "::add-path::$rubocop_bin_path"
 
     # actions/runner#646: you cannot use `if` conditional either...
     #- name: Install rubocop
@@ -107,8 +124,15 @@ runs:
           echo "Autocorrect skipped"
         fi
 
+    # Because windows refuses to do subprocess.run(shlex.split('rubocop --format json') even if I supply the full path
+    # So I'm running this step in bash instead of inside the python later...
     - name: run rubocop
-      id: run_rubocop
+      shell: bash
+      run: |
+          rubocop --format json > rubocop.json || true
+
+    - name: Analyze rubocop results
+      id: analyze_rubocop
       shell: python
       run: |
         import os
@@ -150,16 +174,21 @@ runs:
             Also prints the summary data
             """
 
-            result = subprocess.run(shlex.split('rubocop --format json'),
-                                    capture_output=True)
+            # result = subprocess.run([r'${{ steps.check_rubocop_installed.outputs.rubocop_path }}', '--format', 'json'],
+            #                        capture_output=True)
 
-            if result.returncode == 0:
-                conclusion = 'success'
-            else:
-                conclusion = 'failure'
+            #if result.returncode == 0:
+                #conclusion = 'success'
+            #else:
+                #conclusion = 'failure'
 
-            data = json.loads(result.stdout)
-            print("Rubocop exited with {}: {}".format(result.returncode, conclusion))
+            #data = json.loads(result.stdout)
+            #print("Rubocop exited with {}: {}".format(result.returncode, conclusion))
+
+            with open('rubocop.json', 'r') as f:
+                data = json.load(f)
+            os.remove('rubocop.json')
+
             print(json.dumps(data['summary'], indent=4, sort_keys=True))
             print(f"::set-output name=summary::'{json.dumps(data['summary'])}'")
 

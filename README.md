@@ -16,6 +16,38 @@ Here is an example workflow `rubocop.yml` that you could use in your project. No
 
 Note that if rubocop is already installed on your host, it will not install it again.
 
+```
+name: Rubocop
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master, develop ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+    - uses: actions/checkout@v2
+
+    - uses: actions/setup-ruby@v1
+      with:
+        ruby-version: 2.5
+
+    - uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Run Rubocop
+      uses: jmarrec/rubocop@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        rubocop-version: '0.80.1'
+        # ruby-version: '2.5'
+```
+
 There is also an `autocorrect` argument that will run `rubocop --auto-correct` first if set to `true`. Defaults to `false`.
 If you set this to `true`, you can also use `commit-auto-correct` set to `true` to that the resulting auto-corrected files are pushed to your branch
 

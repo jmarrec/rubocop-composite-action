@@ -1,5 +1,5 @@
 name: 'Rubocop Composite Action'
-description: 'A github composite action (runs natively on the host, not inside a docker) that runs rubocop on your PRs and allows you to specify the ruby version you want'
+description: 'A github composite action (runs natively on the host) that runs rubocop, with an option to auto-correct'
 author: 'Julien Marrec'
 branding:
   icon: 'alert-triangle'

@@ -39,19 +39,20 @@ runs:
         if [ `gem list -i "^rubocop$"` != "true" ]; then
           echo "gem rubocop is not installed"
           echo "::set-output name=rubocop_installed::false"
+          gem install rubocop -v '${{ inputs.rubocop-version }}'
         else
           echo "Rubocop is already installed:"
           gem list "^rubocop$"
           echo "::set-output name=rubocop_installed::true"
         fi
 
-
-    - name: Install rubocop
-      if: ${{ steps.check_rubocop_installed.rubocop_installed != 'true' }}
-      shell: bash
-      run: |
-        set -x
-        gem install rubocop -v '${{ inputs.rubocop-version }}'
+    # actions/runner#646: you cannot use `if` conditional either...
+    #- name: Install rubocop
+      #if: ${{ steps.check_rubocop_installed.rubocop_installed != 'true' }}
+      #shell: bash
+      #run: |
+        #set -x
+        #gem install rubocop -v '${{ inputs.rubocop-version }}'
 
     - name: Install python requests and check versions
       shell: bash

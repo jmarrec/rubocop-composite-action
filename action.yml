@@ -195,6 +195,8 @@ runs:
                 see https://developer.github.com/v3/checks/runs/#output-object-1
             """
             annotations = []
+            conclusion = 'success'
+
             for f in data['files']:
                 if not f['offenses']:
                     continue

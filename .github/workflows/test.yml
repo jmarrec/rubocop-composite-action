@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest] # macos-latest, windows-latest, ubuntu-16.04, ubuntu-18.04, 
+        os: [ubuntu-latest] # macos-latest, windows-latest, ubuntu-16.04, ubuntu-18.04,
 
     steps:
     - name: Checkout
@@ -45,8 +45,15 @@ jobs:
         ruby --version
         python --version
         gem list | grep rubocop
-        echo "${{ steps.rubocop.outputs.summary }}"
-        echo "${{ steps.rubocop.outputs.all_output }}"
+        echo ${{ steps.rubocop.outputs.summary }}
+        echo ${{ steps.rubocop.outputs.all_output }}
+        offense_count=$(echo ${{ steps.rubocop.outputs.summary }} | jq .offense_count)
+        if [[ "$offense_count" -eq 7 ]]; then
+          exit 0
+        else
+          exit 1
+        fi
+
 
   #specific-ruby-and-rubocop-version:
     #name: Setup with specific ruby and rubocop version

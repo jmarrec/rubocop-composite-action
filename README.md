@@ -12,7 +12,9 @@ to Linux hosts.
 
 ## Usage
 
-Here is an example workflow `rubocop.yml` that you could use in your project
+Here is an example workflow `rubocop.yml` that you could use in your project. Note that you need Python 3.8+ as I'm using f-strings.
+
+Note that if rubocop is already installed on your host, it will not install it again.
 
 ```
 name: Rubocop

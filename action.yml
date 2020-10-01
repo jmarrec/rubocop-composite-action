@@ -9,7 +9,7 @@ inputs:
     description: "(UNUSED CURRENTLY) Ruby version to use, Version range or exact version of a ruby version to use, using SemVer's version range syntax, passed down to setup-ruby action"
     default: '2.5'
   rubocop-version:
-    description: 'Rubocop version to use'
+    description: 'Rubocop version to use. If rubocop is already installed on the runner, then this is skipped'
     default: '0.80.1'
 outputs:
   summary:
@@ -35,11 +35,17 @@ runs:
     - name: install rubocop and python requests
       shell: bash
       run: |
-          set -x
+        set -x
+        if [ `gem list -i "^rubocop$"` != "true" ]; then
+          echo "Installing rubocop version '${{ inputs.rubocop-version }}'"
           gem install rubocop -v '${{ inputs.rubocop-version }}'
-          pip install requests
-          python --version
-          ruby --version
+        else
+          echo "Rubocop is already installed:"
+          gem list "^rubocop$"
+        fi
+        pip install requests
+        python --version
+        ruby --version
 
     - name: Check if rubocop gem is installed
       shell: bash

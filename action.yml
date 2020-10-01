@@ -141,13 +141,16 @@ runs:
                 see https://developer.github.com/v3/checks/runs/#output-object-1
             """
             annotations = []
-            for f in data['files']:
-                if not f['offenses']:
-                    continue
+            files = [f for f in data['files'] if f['offenses']]
+            n_correctable = 0
+            for f in files:
                 path = f['path']
                 for offense in f['offenses']:
                     severity = offense['severity']
-                    correctable = " (Correctable)" if offense['correctable'] else ""
+                    correctable = ""
+                    if offense['correctable']:
+                        n_correctable += 1
+                        correctable = " (Correctable)"
                     message = "{}: {}{}".format(offense['cop_name'],
                                                 offense['message'],
                                                 correctable)
@@ -171,13 +174,20 @@ runs:
                                                 data['metadata']['ruby_patchlevel'])
             output = {
                 "title": title,
-                "summary": "{} offense(s) found".format(
-                    data['summary']['offense_count']),
+                "summary": f"{data['summary']['offense_count']} offense(s) found ({n_correctable} Correctable)",
                 'annotations': annotations
             }
 
+            actions = None
+            if n_correctable > 0:
+                actions = [{
+                    "label": "Fix this",
+                    "description": "Run rubocop --auto-correct",
+                    "identifier": "fix_errors"
+                }]
+
             print(f"::set-output name=all_output::'{json.dumps(output)}'")
-            return conclusion, output
+            return conclusion, output, actions
 
 
         def create_check_run():
@@ -206,7 +216,7 @@ runs:
             return data['id'], data['url']
 
 
-        def update_check_run(check_url, conclusion, output):
+        def update_check_run(check_url, conclusion, output, actions):
             """
             Update the given check-run (check_url) with the conclusion and annotations
             and sets its status to 'completed'. Uses a PATCH not a POST
@@ -231,6 +241,8 @@ runs:
                 'conclusion': conclusion,
                 'output': output
             }
+            if actions:
+                body['actions'] = actions
 
             # query_url = (
             #     "https://api.github.com/repos/{}/check-runs/{}".format(OWNER_REPO,
@@ -250,10 +262,10 @@ runs:
             output = {}
             try:
                 data = run_rubocop()
-                conclusion, output = process_rubocop_output(data)
+                conclusion, output, actions = process_rubocop_output(data)
                 print(f"{conclusion=}")
                 print(f"{json.dumps(output, indent=4, sort_keys=True)}")
-                update_check_run(check_url, conclusion, output)
+                update_check_run(check_url, conclusion, output, actions)
                 print("update_check_run done")
             except Exception as e:
                 update_check_run(check_url, "failure", None)

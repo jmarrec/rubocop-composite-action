@@ -11,6 +11,12 @@ inputs:
   rubocop-version:
     description: 'Rubocop version to use. If rubocop is already installed on the runner, then this is skipped'
     default: '0.80.1'
+  autocorrect:
+    description: 'If set to true, will run `rubocop --auto-correct` before reporting failures'
+    default: false
+  commit-auto-correct:
+    description: 'If set to true, and autocorrect argument as well, will commit the autocorrected files to the branch'
+    default: false
 outputs:
   summary:
     description: "High level info (number of files checked and number of offenses) from rubocop"
@@ -39,7 +45,7 @@ runs:
       id: check_rubocop_installed
       shell: bash
       run: |
-        if [ `gem list -i "^rubocop$"` != "true" ]; then
+        if [[ `gem list -i "^rubocop$"` != "true" ]]; then
           echo "gem rubocop is not installed"
           echo "::set-output name=rubocop_was_installed::true"
           gem install rubocop -v '${{ inputs.rubocop-version }}'
@@ -65,6 +71,24 @@ runs:
         python --version
         ruby --version
         rubocop --version
+
+    - name: Rubocop autocorrect?
+      # if: ${{ inputs.autocorrect }}"
+      shell: bash
+      run: |
+        if [[ "${{ inputs.autocorrect }}" == "true"]]; then
+          echo "Running rubocop autocorrect"
+          rubocop --auto-correct
+          if [[ "${{ inputs.commit-auto-correct }}" == "true"]]; then
+            git add -u
+            git config --global user.email 'github-rubocop-actions[bot]@users.noreply.github.com'
+            git config --global user.name 'github-rubocop-actions[bot]'
+            git commit -m "Commit rubocop --auto-correct"
+            git push -u origin $branch_name
+          fi
+        else
+          echo "Autocorrect skipped"
+        fi
 
     - name: run rubocop
       id: run_rubocop

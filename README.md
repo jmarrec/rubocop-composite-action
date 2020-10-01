@@ -63,10 +63,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
+    - name: Checkout for PR
+      if: ${{ github.event_name == 'pull_request' }}
       uses: actions/checkout@v2
       with:
         ref: ${{ github.event.pull_request.head.sha }}  # Checkout the PR branch instead of the merge commit
+
+    - name: Checkout for push
+      if: ${{ github.event_name != 'pull_request' }}
+      uses: actions/checkout@v2
 
     - uses: actions/setup-ruby@v1
       with:
@@ -76,13 +81,12 @@ jobs:
       with:
         python-version: 3.8
 
-    - name: Run Rubocop
-      uses: jmarrec/rubocop@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Run rubocop
+      id: rubocop
+      uses: ./
       with:
-        rubocop-version: '0.80.1'
         autocorrect: true
         commit-auto-correct: true
-        # ruby-version: '2.5'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```

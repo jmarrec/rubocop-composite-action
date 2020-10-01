@@ -3,7 +3,7 @@ def aBadMethodName(a = nil)
     return false
   end
 
-  if a = 5
+  if a = 8
     return false
   end
 

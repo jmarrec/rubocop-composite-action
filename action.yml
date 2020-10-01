@@ -45,6 +45,7 @@ runs:
       id: check_rubocop_installed
       shell: bash
       run: |
+        set -x
         if [[ `gem list -i "^rubocop$"` != "true" ]]; then
           echo "gem rubocop is not installed"
           echo "::set-output name=rubocop_was_installed::true"
@@ -54,6 +55,11 @@ runs:
           gem list "^rubocop$"
           echo "::set-output name=rubocop_was_installed::false"
         fi
+        # Windows is ruining my life as usual. Seems like the subprocess.check_call later can't find the rubocop, so try to pass its full path computed from git bash...
+        rubocop_path=$(which rubocop)
+        echo "::set-output name=rubocop_path::$rubocop_path"
+        rubocop_bin_path=$(dirname $rubocop_path)
+        echo $rubocop_bin_path >> $GITHUB_PATH
 
     # actions/runner#646: you cannot use `if` conditional either...
     #- name: Install rubocop

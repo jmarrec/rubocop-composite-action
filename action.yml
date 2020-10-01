@@ -77,8 +77,6 @@ runs:
       shell: bash
       run: |
         if [[ "${{ inputs.autocorrect }}" == "true" ]]; then
-          echo "Running rubocop autocorrect"
-          rubocop --auto-correct || true
           if [[ "${{ inputs.commit-auto-correct }}" == "true" ]]; then
 
             branch_name=""
@@ -88,13 +86,20 @@ runs:
               branch_name="${{ github.ref }}"
             fi
 
-            git checkout $branch_name
+            echo "Checking out branch: $branch_name"
+            git checkout -b $branch_name || git checkout $branch_name
+
+            echo "Running rubocop autocorrect"
+            rubocop --auto-correct || true
 
             git add -u
             git config --global user.email 'github-rubocop-actions[bot]@users.noreply.github.com'
             git config --global user.name 'github-rubocop-actions[bot]'
-            git commit -m "Commit rubocop --auto-correct"
+            git commit -m "Commit rubocop --auto-correct (Ruby $(ruby --version), Rubocop $(rubocop --version))"
             git push -u origin $branch_name
+          else
+            echo "Running rubocop autocorrect"
+            rubocop --auto-correct || true
           fi
         else
           echo "Autocorrect skipped"

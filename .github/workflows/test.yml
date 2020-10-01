@@ -1,0 +1,74 @@
+name: Validate 'rubocop-composite-action'
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    paths-ignore:
+      - '**.md'
+  schedule:
+    - cron: 0 0 * * *
+
+jobs:
+  default-version:
+    name: Setup default version
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-16.04, ubuntu-18.04]
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Run rubocop
+      id: rubocop
+      uses: ./
+
+    - name: Validate version
+      run: |
+        set -x
+        ruby --version
+        python --version
+        gem list | grep rubocop
+        echo "${{ steps.rubocop.outputs.summary }}"
+        echo "${{ steps.rubocop.outputs.all_output }}"
+
+  setup-versions-from-manifest:
+    name: Setup ${{ matrix.ruby }} ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-16.04, ubuntu-18.04]
+        ruby: [2.5, 2.6, 2.7]
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Run rubocop with ${{ matrix.ruby }}
+      uses: ./
+      with:
+        ruby-version: ${{ matrix.ruby }}
+
+    - name: Check output
+      shell: bash
+      run: |
+        set -x
+        ruby --version
+        python --version
+        gem list | grep rubocop
+        echo "${{ steps.rubocop.outputs.summary }}"
+        echo "${{ steps.rubocop.outputs.all_output }}"   - name: Validate version
+
+    - name: Check version
+      run: |
+        $rubyVersion = (ruby --version)
+        if ("Ruby ${{ matrix.ruby }}" -ne "$rubyVersion"){
+          Write-Host "The current version is $rubyVersion; expected version is ${{ matrix.ruby }}"
+          exit 1
+        }
+        $rubyVersion
+      shell: pwsh

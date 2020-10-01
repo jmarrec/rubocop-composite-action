@@ -76,15 +76,15 @@ runs:
       # if: ${{ inputs.autocorrect }}"
       shell: bash
       run: |
-        if [[ "${{ inputs.autocorrect }}" == "true"]]; then
+        if [[ "${{ inputs.autocorrect }}" == "true" ]]; then
           echo "Running rubocop autocorrect"
           rubocop --auto-correct
-          if [[ "${{ inputs.commit-auto-correct }}" == "true"]]; then
+          if [[ "${{ inputs.commit-auto-correct }}" == "true" ]]; then
             git add -u
             git config --global user.email 'github-rubocop-actions[bot]@users.noreply.github.com'
             git config --global user.name 'github-rubocop-actions[bot]'
             git commit -m "Commit rubocop --auto-correct"
-            git push -u origin $branch_name
+            git push -u origin
           fi
         else
           echo "Autocorrect skipped"

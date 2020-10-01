@@ -1,0 +1,32 @@
+name: Test 'rubocop-composite-action' autocorrect feature
+on:
+  pull_request:
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  autocorrect-test:
+    name: Test autocorrect
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - uses: actions/setup-ruby@v1
+      with:
+        ruby-version: 2.5
+
+    - uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Run rubocop
+      id: rubocop
+      uses: ./
+      with:
+        autocorrect: true
+        commit-auto-correct: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        TEST_DONOT_THROW: true   # For the in-repo tests, I don't want to fail the workflow

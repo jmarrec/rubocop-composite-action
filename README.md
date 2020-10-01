@@ -2,7 +2,7 @@
 
 This action runs natively on the host instead of being in a docker. Internally it uses [setup-ruby](https://github.com/actions/setup-ruby) and [setup-python](https://github.com/actions/setup-python). Why `setup-python` you may ask: because I like python better than ruby, that's all.
 
-It allows you to choose the `ruby-version` and the `rubocop-version` to be installed.
+It allows you to choose the `ruby-version` and the `rubocop-version` to be installed. **TODO**: Ideally this would have been part of the action itself, but composite actions **do not** support `uses` at the moment. **So you must use setup-ruby and setup-python yourself** before calling the action. [See actions/runner#646](https://github.com/actions/runner/issues/646)
 
 It will run rubocop, and use the github REST API to create a check-runs that will add annotations to your code where warning and failures where found.
 
@@ -29,9 +29,17 @@ jobs:
 
     - uses: actions/checkout@v2
 
+    - uses: actions/setup-ruby@v1
+      with:
+        ruby-version: 2.5
+
+    - uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
     - name: Run Rubocop
       uses: jmarrec/rubocop@v1
       with:
-        ruby-version: '2.5'
         rubocop-version: '0.80.1'
+        # ruby-version: '2.5'
 ```

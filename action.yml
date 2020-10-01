@@ -6,7 +6,7 @@ branding:
   color: 'red'
 inputs:
   ruby-version:
-    description: "Ruby version to use, Version range or exact version of a ruby version to use, using SemVer's version range syntax, passed down to setup-ruby action"
+    description: "(UNUSED CURRENTLY) Ruby version to use, Version range or exact version of a ruby version to use, using SemVer's version range syntax, passed down to setup-ruby action"
     default: '2.5'
   rubocop-version:
     description: 'Rubocop version to use'
@@ -22,15 +22,15 @@ outputs:
 runs:
   using: 'composite'
   steps:
-    - uses: actions/checkout@v2
+    #- uses: actions/checkout@v2
 
-    - uses: actions/setup-ruby@v1
-      with:
-        ruby-version: ${{ inputs.ruby-version }}
+    #- uses: actions/setup-ruby@v1
+      #with:
+        #ruby-version: ${{ inputs.ruby-version }}
 
-    - uses: actions/setup-python@v2
-      with:
-        python-version: '3.8'
+    #- uses: actions/setup-python@v2
+      #with:
+        #python-version: '3.8'
 
     - name: install rubocop and python requests
       shell: bash

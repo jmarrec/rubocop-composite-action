@@ -12,102 +12,7 @@ on:
     - cron: 0 0 * * *
 
 jobs:
-  default-version:
-    name: Setup default all
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest] # macos-latest, windows-latest, ubuntu-16.04, ubuntu-18.04,
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-
-    - uses: actions/setup-ruby@v1
-      with:
-        ruby-version: 2.5
-
-    - uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
-
-    - name: Run rubocop
-      id: rubocop
-      uses: ./
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        TEST_DONOT_THROW: true   # For the in-repo tests, I don't want to fail the workflow
-
-    - name: Validate rubocop run
-      if: always()  # We expect the step before to fail!
-      run: |
-        set -x
-        ruby --version
-        python --version
-        gem list | grep rubocop
-        echo ${{ steps.rubocop.outputs.summary }}
-        echo ${{ steps.rubocop.outputs.all_output }}
-        offense_count=$(echo ${{ steps.rubocop.outputs.summary }} | jq .offense_count)
-        if [[ "$offense_count" -ne 7 ]]; then
-          exit 1
-        fi
-        if [[ "${{ steps.rubocop.outputs.rubocop_was_installed }}" != "true" ]]; then
-          exit 1
-        fi
-         if [[ "$(rubocop --version)" != "0.80.1" ]]; then
-          exit 1
-        fi
-
-  rubocop-already-installed:
-    name: Setup default all
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-
-    - uses: actions/setup-ruby@v1
-      with:
-        ruby-version: 2.5
-
-    - uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
-
-    - name: Pre-install rubocop
-      shell: bash
-      run: |
-        gem install rubocop -v '0.81.0'
-
-    - name: Run rubocop
-      id: rubocop
-      uses: ./
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        TEST_DONOT_THROW: true   # For the in-repo tests, I don't want to fail the workflow
-
-    - name: Validate rubocop run
-      if: always()  # We expect the step before to fail!
-      run: |
-        set -x
-        ruby --version
-        python --version
-        gem list | grep rubocop
-        echo ${{ steps.rubocop.outputs.summary }}
-        echo ${{ steps.rubocop.outputs.all_output }}
-        offense_count=$(echo ${{ steps.rubocop.outputs.summary }} | jq .offense_count)
-        if [[ "$offense_count" -ne 7 ]]; then
-          exit 1
-        fi
-        if [[ "${{ steps.rubocop.outputs.rubocop_was_installed }}" != "false" ]]; then
-          exit 1
-        fi
-        if [[ "$(rubocop --version)" != "0.81.0" ]]; then
-          exit 1
-        fi
-
-  setup-versions-from-manifest:
+  default-version-matrix:
     name: Setup ${{ matrix.ruby }} ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -136,6 +41,7 @@ jobs:
 
     - name: Validate rubocop run
       if: always()  # We expect the step before to fail!
+      shell: bash
       run: |
         set -x
         ruby --version
@@ -151,5 +57,100 @@ jobs:
           exit 1
         fi
          if [[ "$(rubocop --version)" != "0.80.1" ]]; then
+          exit 1
+        fi
+
+  specific-version:
+    name: Setup with rubocop version as argument
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - uses: actions/setup-ruby@v1
+      with:
+        ruby-version: 2.5
+
+    - uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Run rubocop
+      id: rubocop
+      uses: ./
+      with:
+        rubocop-version: 0.92.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        TEST_DONOT_THROW: true   # For the in-repo tests, I don't want to fail the workflow
+
+    - name: Validate rubocop run
+      if: always()  # We expect the step before to fail!
+      shell: bash
+      run: |
+        set -x
+        ruby --version
+        python --version
+        gem list | grep rubocop
+        echo ${{ steps.rubocop.outputs.summary }}
+        echo ${{ steps.rubocop.outputs.all_output }}
+        offense_count=$(echo ${{ steps.rubocop.outputs.summary }} | jq .offense_count)
+        if [[ "$offense_count" -ne 7 ]]; then
+          exit 1
+        fi
+        if [[ "${{ steps.rubocop.outputs.rubocop_was_installed }}" != "true" ]]; then
+          exit 1
+        fi
+         if [[ "$(rubocop --version)" != "0.92.0" ]]; then
+          exit 1
+        fi
+
+  rubocop-already-installed:
+    name: Setup with rubocop already installed
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - uses: actions/setup-ruby@v1
+      with:
+        ruby-version: 2.5
+
+    - uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Pre-install rubocop
+      shell: bash
+      run: |
+        gem install rubocop -v '0.81.0'
+
+    - name: Run rubocop
+      id: rubocop
+      uses: ./
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        TEST_DONOT_THROW: true   # For the in-repo tests, I don't want to fail the workflow
+
+    - name: Validate rubocop run
+      if: always()  # We expect the step before to fail!
+      shell: bash
+      run: |
+        set -x
+        ruby --version
+        python --version
+        gem list | grep rubocop
+        echo ${{ steps.rubocop.outputs.summary }}
+        echo ${{ steps.rubocop.outputs.all_output }}
+        offense_count=$(echo ${{ steps.rubocop.outputs.summary }} | jq .offense_count)
+        if [[ "$offense_count" -ne 7 ]]; then
+          exit 1
+        fi
+        if [[ "${{ steps.rubocop.outputs.rubocop_was_installed }}" != "false" ]]; then
+          exit 1
+        fi
+        if [[ "$(rubocop --version)" != "0.81.0" ]]; then
           exit 1
         fi

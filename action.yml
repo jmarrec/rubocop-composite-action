@@ -53,13 +53,17 @@ runs:
       id: run_rubocop
       shell: python
       run: |
+        import os
         import json
         import shlex
         import subprocess
         import datetime
         import requests
 
-        GITHUB_TOKEN = "${{ secrets.GITHUB_TOKEN }}"
+        if not 'GITHUB_TOKEN' in os.environ:
+            raise ValueError("You must pass env GITHUB_TOKEN set to secrets.GITHUB_TOKEN")
+
+        GITHUB_TOKEN = os.environ['GITHUB_TOKEN']
         GITHUB_SHA = "${{ github.head_ref }}"
         OWNER_REPO = "${{ github.repository }}"  # "owner/repo"
 

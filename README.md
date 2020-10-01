@@ -39,6 +39,8 @@ jobs:
 
     - name: Run Rubocop
       uses: jmarrec/rubocop@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         rubocop-version: '0.80.1'
         # ruby-version: '2.5'

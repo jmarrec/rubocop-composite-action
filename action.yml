@@ -80,11 +80,21 @@ runs:
           echo "Running rubocop autocorrect"
           rubocop --auto-correct || true
           if [[ "${{ inputs.commit-auto-correct }}" == "true" ]]; then
+
+            branch_name=""
+            if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+              branch_name="${{ github.head_ref }}"
+            else
+              branch_name="${{ github.ref }}"
+            fi
+
+            git checkout $branch_name
+
             git add -u
             git config --global user.email 'github-rubocop-actions[bot]@users.noreply.github.com'
             git config --global user.name 'github-rubocop-actions[bot]'
             git commit -m "Commit rubocop --auto-correct"
-            git push -u origin
+            git push -u origin $branch_name
           fi
         else
           echo "Autocorrect skipped"

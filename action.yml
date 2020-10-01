@@ -257,5 +257,5 @@ runs:
                 raise e
 
             print("Reached up this point")
-            if conclusion == "failure":
+            if conclusion == "failure" and ('TEST_DONOT_THROW' not in os.environ):
                 raise RuntimeError(f"Rubocop found failures:\n{json.dumps(output, indent=4, sort_keys=True)}")

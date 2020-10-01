@@ -37,6 +37,7 @@ jobs:
       uses: ./
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        TEST_DONOT_THROW: true   # For the in-repo tests, I don't want to fail the workflow
 
     - name: Validate version
       if: always()  # We expect the step before to fail!

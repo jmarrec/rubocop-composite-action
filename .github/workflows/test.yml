@@ -39,7 +39,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         TEST_DONOT_THROW: true   # For the in-repo tests, I don't want to fail the workflow
 
-    - name: Validate version
+    - name: Validate rubocop run
       if: always()  # We expect the step before to fail!
       run: |
         set -x
@@ -49,79 +49,107 @@ jobs:
         echo ${{ steps.rubocop.outputs.summary }}
         echo ${{ steps.rubocop.outputs.all_output }}
         offense_count=$(echo ${{ steps.rubocop.outputs.summary }} | jq .offense_count)
-        if [[ "$offense_count" -eq 7 ]]; then
-          exit 0
-        else
+        if [[ "$offense_count" -ne 7 ]]; then
+          exit 1
+        fi
+        if [[ "${{ steps.rubocop.outputs.rubocop_was_installed }}" != "true" ]]; then
+          exit 1
+        fi
+         if [[ "$(rubocop --version)" != "0.80.1" ]]; then
           exit 1
         fi
 
+  rubocop-already-installed:
+    name: Setup default all
+    runs-on: ubuntu-latest
 
-  #specific-ruby-and-rubocop-version:
-    #name: Setup with specific ruby and rubocop version
-    #runs-on: ${{ matrix.os }}
-    #strategy:
-      #fail-fast: false
-      #matrix:
-        #os: [macos-latest, windows-latest, ubuntu-16.04, ubuntu-18.04]
-    #steps:
-    #- name: Checkout
-      #uses: actions/checkout@v2
-    #- uses: actions/setup-ruby@v1
-      #with:
-        #ruby-version: 2.5
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
 
-    #- uses: actions/setup-python@v2
-      #with:
-        #python-version: 3.8
-    #- name: Run rubocop
-      #id: rubocop
-      #uses: ./
-      #with:
-        #ruby-version: 2.5
-        #rubocop-version: 0.80.1
+    - uses: actions/setup-ruby@v1
+      with:
+        ruby-version: 2.5
 
-    #- name: Validate version
-      #run: |
-        #set -x
-        #ruby --version
-        #python --version
-        #gem list | grep rubocop
-        #echo "${{ steps.rubocop.outputs.summary }}"
-        #echo "${{ steps.rubocop.outputs.all_output }}"
+    - uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
 
-  #setup-versions-from-manifest:
-    #name: Setup ${{ matrix.ruby }} ${{ matrix.os }}
-    #runs-on: ${{ matrix.os }}
-    #strategy:
-      #fail-fast: false
-      #matrix:
-        #os: [macos-latest, windows-latest, ubuntu-16.04, ubuntu-18.04]
-        #ruby: [2.5, 2.6, 2.7]
-    #steps:
-    #- name: Checkout
-      #uses: actions/checkout@v2
+    - name: Pre-install rubocop
+      shell: bash
+      run: |
+        gem install rubocop -v '0.81.0'
 
-    #- name: Run rubocop with ${{ matrix.ruby }}
-      #uses: ./
-      #with:
-        #ruby-version: ${{ matrix.ruby }}
+    - name: Run rubocop
+      id: rubocop
+      uses: ./
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        TEST_DONOT_THROW: true   # For the in-repo tests, I don't want to fail the workflow
 
-    #- name: Check output
-      #shell: bash
-      #run: |
-        #set -x
-        #ruby --version
-        #python --version
-        #gem list | grep rubocop
-        #echo "${{ steps.rubocop.outputs.summary }}"
-        #echo "${{ steps.rubocop.outputs.all_output }}"   - name: Validate version
+    - name: Validate rubocop run
+      if: always()  # We expect the step before to fail!
+      run: |
+        set -x
+        ruby --version
+        python --version
+        gem list | grep rubocop
+        echo ${{ steps.rubocop.outputs.summary }}
+        echo ${{ steps.rubocop.outputs.all_output }}
+        offense_count=$(echo ${{ steps.rubocop.outputs.summary }} | jq .offense_count)
+        if [[ "$offense_count" -ne 7 ]]; then
+          exit 1
+        fi
+        if [[ "${{ steps.rubocop.outputs.rubocop_was_installed }}" != "false" ]]; then
+          exit 1
+        fi
+        if [[ "$(rubocop --version)" != "0.81.0" ]]; then
+          exit 1
+        fi
 
-    #- name: Check version
-      #run: |
-        #$rubyVersion = (ruby --version)
-        #if ("Ruby ${{ matrix.ruby }}" -ne "$rubyVersion"){
-          #Write-Host "The current version is $rubyVersion; expected version is ${{ matrix.ruby }}"
-          #exit 1
-        #}
-        #$rubyVersion
-      #shell: pwsh
+  setup-versions-from-manifest:
+    name: Setup ${{ matrix.ruby }} ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        ruby: [2.5, 2.7]
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - uses: actions/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby }}
+
+    - uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Run rubocop
+      id: rubocop
+      uses: ./
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        TEST_DONOT_THROW: true   # For the in-repo tests, I don't want to fail the workflow
+
+    - name: Validate rubocop run
+      if: always()  # We expect the step before to fail!
+      run: |
+        set -x
+        ruby --version
+        python --version
+        gem list | grep rubocop
+        echo ${{ steps.rubocop.outputs.summary }}
+        echo ${{ steps.rubocop.outputs.all_output }}
+        offense_count=$(echo ${{ steps.rubocop.outputs.summary }} | jq .offense_count)
+        if [[ "$offense_count" -ne 7 ]]; then
+          exit 1
+        fi
+        if [[ "${{ steps.rubocop.outputs.rubocop_was_installed }}" != "true" ]]; then
+          exit 1
+        fi
+         if [[ "$(rubocop --version)" != "0.80.1" ]]; then
+          exit 1
+        fi

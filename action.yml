@@ -91,13 +91,15 @@ runs:
             rubocop --auto-correct || true
 
             git add -u
-            git config --global user.email 'github-rubocop-actions[bot]@users.noreply.github.com'
-            git config --global user.name 'github-rubocop-actions[bot]'
-            git commit -m "Commit rubocop --auto-correct (Ruby $(ruby --version), Rubocop $(rubocop --version))"
-            if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-              git push -u origin $branch_name
-            else
-              git push
+            if [[ $(git diff --cached --exit-code) ]]; then
+              git config --global user.email 'github-rubocop-actions[bot]@users.noreply.github.com'
+              git config --global user.name 'github-rubocop-actions[bot]'
+              git commit -m "Commit rubocop --auto-correct (Ruby $(ruby --version), Rubocop $(rubocop --version))"
+              if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+                git push -u origin $branch_name
+              else
+                git push
+              fi
             fi
 
           else

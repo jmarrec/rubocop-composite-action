@@ -167,7 +167,7 @@ runs:
             Also prints the summary data
             """
 
-            result = subprocess.run(shlex.split(r'${{ steps.check_rubocop_installed.outputs.rubocop_path }} --format json'),
+            result = subprocess.run([r'${{ steps.check_rubocop_installed.outputs.rubocop_path }}', '--format', 'json'],
                                     capture_output=True)
 
             if result.returncode == 0:

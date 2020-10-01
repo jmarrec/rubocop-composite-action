@@ -32,28 +32,35 @@ runs:
       #with:
         #python-version: '3.8'
 
-    - name: install rubocop and python requests
-      shell: bash
-      run: |
-        set -x
-        if [ `gem list -i "^rubocop$"` != "true" ]; then
-          echo "Installing rubocop version '${{ inputs.rubocop-version }}'"
-          gem install rubocop -v '${{ inputs.rubocop-version }}'
-        else
-          echo "Rubocop is already installed:"
-          gem list "^rubocop$"
-        fi
-        pip install requests
-        python --version
-        ruby --version
-
     - name: Check if rubocop gem is installed
+      id: check_rubocop_installed
       shell: bash
       run: |
         if [ `gem list -i "^rubocop$"` != "true" ]; then
           echo "gem rubocop is not installed"
-          exit 1
+          echo "::set-output name=rubocop_installed::false"
+        else
+          echo "Rubocop is already installed:"
+          gem list "^rubocop$"
+          echo "::set-output name=rubocop_installed::true"
         fi
+
+
+    - name: Install rubocop
+      if: ${{ steps.check_rubocop_installed.rubocop_installed != 'true' }}
+      shell: bash
+      run: |
+        set -x
+        gem install rubocop -v '${{ inputs.rubocop-version }}'
+
+    - name: Install python requests and check versions
+      shell: bash
+      run: |
+        set -x
+        pip install requests
+        python --version
+        ruby --version
+        rubocop --version
 
     - name: run rubocop
       id: run_rubocop

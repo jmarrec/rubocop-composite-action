@@ -79,16 +79,12 @@ runs:
         if [[ "${{ inputs.autocorrect }}" == "true" ]]; then
           if [[ "${{ inputs.commit-auto-correct }}" == "true" ]]; then
 
-            #branch_name=""
-            #if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-              #branch_name="${{ github.head_ref }}"
-            #else
-              #branch_name="${{ github.ref }}"
-              #branch_name=${branch_name#refs/heads/}
-            #fi
-
-            #echo "Checking out branch: $branch_name"
-            #git checkout -b $branch_name || git checkout $branch_name
+            branch_name=""
+            if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+              branch_name="${{ github.head_ref }}"
+              echo "Checking out branch: $branch_name"
+              git checkout -b $branch_name || git checkout $branch_name
+            fi
 
             echo "Running rubocop autocorrect"
             rubocop --auto-correct || true
@@ -97,8 +93,12 @@ runs:
             git config --global user.email 'github-rubocop-actions[bot]@users.noreply.github.com'
             git config --global user.name 'github-rubocop-actions[bot]'
             git commit -m "Commit rubocop --auto-correct (Ruby $(ruby --version), Rubocop $(rubocop --version))"
-            # git push -u origin $branch_name
-            git push
+            if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+              git push -u origin $branch_name
+            else
+              git push
+            fi
+
           else
             echo "Running rubocop autocorrect"
             rubocop --auto-correct || true

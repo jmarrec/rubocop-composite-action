@@ -63,8 +63,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-
-    - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}  # Checkout the PR branch instead of the merge commit
 
     - uses: actions/setup-ruby@v1
       with:

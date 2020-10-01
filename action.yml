@@ -103,7 +103,7 @@ runs:
             data = json.loads(result.stdout)
             print("Rubocop exited with {}: {}".format(result.returncode, conclusion))
             print(json.dumps(data['summary'], indent=4, sort_keys=True))
-            print(f"::set-output name=summary::'{json.dumps(data['summary'], indent=4, sort_keys=True)}'")
+            print(f"::set-output name=summary::'{json.dumps(data['summary'])}'")
 
             return data
 
@@ -159,7 +159,7 @@ runs:
                 'annotations': annotations
             }
 
-            print(f"::set-output name=all_output::'{json.dumps(output, indent=4, sort_keys=True)}'")
+            print(f"::set-output name=all_output::'{json.dumps(output)}'")
             return conclusion, output
 
 

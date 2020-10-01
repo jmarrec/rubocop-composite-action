@@ -64,7 +64,9 @@ runs:
             raise ValueError("You must pass env GITHUB_TOKEN set to secrets.GITHUB_TOKEN")
 
         GITHUB_TOKEN = os.environ['GITHUB_TOKEN']
-        GITHUB_SHA = "${{ github.head_ref }}"
+        GITHUB_SHA = os.environ['GITHUB_SHA'] # TODO for PRs, perhaps github.head_ref is better
+        GITHUB_EVENT_NAME = os.environ['GITHUB_EVENT_NAME']
+        print(f"{GITHUB_EVENT_NAME=}, {GITHUB_SHA=}")
         OWNER_REPO = "${{ github.repository }}"  # "owner/repo"
 
         ANNOTATIONS_LEVELS = {

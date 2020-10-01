@@ -40,7 +40,7 @@ jobs:
         python-version: 3.8
 
     - name: Run Rubocop
-      uses: jmarrec/rubocop@v1
+      uses: jmarrec/rubocop-composite-action@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
@@ -83,7 +83,7 @@ jobs:
 
     - name: Run rubocop
       id: rubocop
-      uses: ./
+      uses: jmarrec/rubocop-composite-action@v1
       with:
         autocorrect: true
         commit-auto-correct: true

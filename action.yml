@@ -55,7 +55,12 @@ runs:
           gem list "^rubocop$"
           echo "::set-output name=rubocop_was_installed::false"
         fi
-
+        # Windows is ruining my life as usual. Seems like the subprocess.check_call later can't find the rubocop, so try to pass its full path computed from git bash...
+        rubocop_path=$(which rubocop)
+        echo "::set-output name=rubocop_path::$rubocop_path"
+        rubocop_bin_path=$(dirname $rubocop_path)
+        echo "::add-path::$rubocop_bin_path"
+        echo "::add-path::$(echo $rubocop_bin_path | sed -e 's/^\///' -e 's/\//\\/g' -e 's/^./\0:/')"
 
     # actions/runner#646: you cannot use `if` conditional either...
     #- name: Install rubocop
@@ -152,7 +157,7 @@ runs:
             Also prints the summary data
             """
 
-            result = subprocess.run(shlex.split('bash -c rubocop --format json'),
+            result = subprocess.run(shlex.split('rubocop --format json'),
                                     capture_output=True)
 
             if result.returncode == 0:

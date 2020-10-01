@@ -1,5 +1,7 @@
 name: Test 'rubocop-composite-action' autocorrect feature
 on:
+  push:
+    branches: [develop]
   pull_request:
     paths-ignore:
       - '**.md'

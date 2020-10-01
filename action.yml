@@ -78,7 +78,7 @@ runs:
       run: |
         if [[ "${{ inputs.autocorrect }}" == "true" ]]; then
           echo "Running rubocop autocorrect"
-          rubocop --auto-correct
+          rubocop --auto-correct || true
           if [[ "${{ inputs.commit-auto-correct }}" == "true" ]]; then
             git add -u
             git config --global user.email 'github-rubocop-actions[bot]@users.noreply.github.com'

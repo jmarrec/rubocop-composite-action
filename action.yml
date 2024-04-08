@@ -17,6 +17,9 @@ inputs:
   commit-auto-correct:
     description: 'If set to true, and autocorrect argument as well, will commit the autocorrected files to the branch'
     default: false
+  use-bundle:
+    description: 'If set to true, will run `bundle exec rubocop` and not just `rubocop`'
+    default: false
 outputs:
   summary:
     description: "High level info (number of files checked and number of offenses) from rubocop"
@@ -88,7 +91,11 @@ runs:
             fi
 
             echo "Running rubocop autocorrect"
-            rubocop --auto-correct || true
+            if [[ "${{ inputs.use-bundle }}" == "true" ]]; then
+              bundle exec rubocop --auto-correct || true
+            else
+              rubocop --auto-correct || true
+            fi
 
             git add -u
             if [[ $(git diff --cached --exit-code) ]]; then
@@ -104,7 +111,11 @@ runs:
 
           else
             echo "Running rubocop autocorrect"
-            rubocop --auto-correct || true
+            if [[ "${{ inputs.use-bundle }}" == "true" ]]; then
+              bundle exec rubocop --auto-correct || true
+            else
+              rubocop --auto-correct || true
+            fi
           fi
         else
           echo "Autocorrect skipped"
@@ -115,12 +126,17 @@ runs:
     - name: run rubocop
       shell: bash
       run: |
+        if [[ "${{ inputs.use-bundle }}" == "true" ]]; then
+          bundle exec rubocop --format json > rubocop.json || true
+        else
           rubocop --format json > rubocop.json || true
+        fi
 
     - name: Analyze rubocop results
       id: analyze_rubocop
       shell: python
       run: |
+        from pathlib import Path
         import os
         import json
         import shlex
@@ -170,9 +186,10 @@ runs:
 
             #data = json.loads(result.stdout)
             #print("Rubocop exited with {}: {}".format(result.returncode, conclusion))
-
-            with open('rubocop.json', 'r') as f:
-                data = json.load(f)
+            p = Path('rubocop.json')
+            if not p.is_file():
+                raise ValueError(f"Could not find {p.absolute()}")
+            data = json.loads(p.read_text())
             os.remove('rubocop.json')
 
             print(json.dumps(data['summary'], indent=4, sort_keys=True))

@@ -51,6 +51,8 @@ jobs:
 There is also an `autocorrect` argument that will run `rubocop --auto-correct` first if set to `true`. Defaults to `false`.
 If you set this to `true`, you can also use `commit-auto-correct` set to `true` to that the resulting auto-corrected files are pushed to your branch
 
+Finally, a `use-bundle` argument is provided so the command run is `bundle exec rubocop` and not `rubocop`
+
 ```
 name: Rubocop
 on:
@@ -87,6 +89,7 @@ jobs:
       with:
         autocorrect: true
         commit-auto-correct: true
+        use-bundle: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```

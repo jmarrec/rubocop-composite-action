@@ -49,7 +49,10 @@ runs:
       shell: bash
       run: |
         set -x
-        if [[ `gem list -i "^rubocop$"` != "true" ]]; then
+        if [[ "${{ inputs.use-bundle }}" == "true" ]]; then
+          bundle exec gem list '^rubocop*'
+          echo "::set-output name=rubocop_was_installed::false"
+        elif [[ `gem list -i "^rubocop$"` != "true" ]]; then
           echo "gem rubocop is not installed"
           echo "::set-output name=rubocop_was_installed::true"
           gem install rubocop -v '${{ inputs.rubocop-version }}'
@@ -74,7 +77,11 @@ runs:
         pip install requests
         python --version
         ruby --version
-        rubocop --version
+        if [[ "${{ inputs.use-bundle }}" == "true" ]]; then
+          bundle exec rubocop --version
+        else
+          rubocop --version
+        fi
 
     - name: Rubocop autocorrect?
       # if: ${{ inputs.autocorrect }}"

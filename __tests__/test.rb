@@ -1,11 +1,11 @@
+# frozen_string_literal: true
+
 def aBadMethodName(a = nil)
-  if a.nil?
+  return false if a.nil?
+
+  if a = 8
     return false
   end
 
-  if a = 5
-    return false
-  end
-
-  return true
+  true
 end

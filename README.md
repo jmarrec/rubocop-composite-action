@@ -20,32 +20,32 @@ Note that if rubocop is already installed on your host, it will not install it a
 name: Rubocop
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master, develop ]
+    branches: [ main, develop ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
-    - uses: actions/setup-ruby@v1
+    - uses: ruby/setup-ruby@v1
       with:
-        ruby-version: 2.5
+        ruby-version: 3.2.2
 
-    - uses: actions/setup-python@v2
+    - uses: actions/setup-python@v5
       with:
-        python-version: 3.8
+        python-version: 3.12.2
 
     - name: Run Rubocop
       uses: jmarrec/rubocop-composite-action@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        rubocop-version: '0.80.1'
-        # ruby-version: '2.5'
+        rubocop-version: '1.50.1'
+        # ruby-version: '3.2.2'
 ```
 
 There is also an `autocorrect` argument that will run `rubocop --auto-correct` first if set to `true`. Defaults to `false`.
@@ -57,9 +57,9 @@ Finally, a `use-bundle` argument is provided so the command run is `bundle exec 
 name: Rubocop
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master, develop ]
+    branches: [ main, develop ]
 
 jobs:
   build:
@@ -67,21 +67,21 @@ jobs:
     steps:
     - name: Checkout for PR
       if: ${{ github.event_name == 'pull_request' }}
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         ref: ${{ github.event.pull_request.head.sha }}  # Checkout the PR branch instead of the merge commit
 
     - name: Checkout for push
       if: ${{ github.event_name != 'pull_request' }}
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
-    - uses: actions/setup-ruby@v1
+    - uses: ruby/setup-ruby@v1
       with:
-        ruby-version: 2.5
+        ruby-version: 3.2.2
 
-    - uses: actions/setup-python@v2
+    - uses: actions/setup-python@v5
       with:
-        python-version: 3.8
+        python-version: 3.12.2
 
     - name: Run rubocop
       id: rubocop

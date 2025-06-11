@@ -7,10 +7,10 @@ branding:
 inputs:
   ruby-version:
     description: "(UNUSED CURRENTLY) Ruby version to use, Version range or exact version of a ruby version to use, using SemVer's version range syntax, passed down to setup-ruby action"
-    default: '2.5'
+    default: '3.2.2'
   rubocop-version:
     description: 'Rubocop version to use. If rubocop is already installed on the runner, then this is skipped'
-    default: '0.80.1'
+    default: '1.50.0'
   autocorrect:
     description: 'If set to true, will run `rubocop --auto-correct` before reporting failures'
     default: false

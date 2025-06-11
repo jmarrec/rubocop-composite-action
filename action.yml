@@ -200,8 +200,8 @@ runs:
             os.remove('rubocop.json')
 
             print(json.dumps(data['summary'], indent=4, sort_keys=True))
-            print(f"::set-output name=summary::'{json.dumps(data['summary'])}'")
-
+            with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+                f.write(f"summary={json.dumps(data['summary'])}\n")
             return data
 
 

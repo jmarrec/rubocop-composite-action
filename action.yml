@@ -7,10 +7,10 @@ branding:
 inputs:
   ruby-version:
     description: "(UNUSED CURRENTLY) Ruby version to use, Version range or exact version of a ruby version to use, using SemVer's version range syntax, passed down to setup-ruby action"
-    default: '2.5'
+    default: '3.2.2'
   rubocop-version:
     description: 'Rubocop version to use. If rubocop is already installed on the runner, then this is skipped'
-    default: '0.80.1'
+    default: '1.50.0'
   autocorrect:
     description: 'If set to true, will run `rubocop --auto-correct` before reporting failures'
     default: false
@@ -51,15 +51,15 @@ runs:
         set -x
         if [[ "${{ inputs.use-bundle }}" == "true" ]]; then
           bundle exec gem list '^rubocop*'
-          echo "::set-output name=rubocop_was_installed::false"
+          echo "rubocop_was_installed=false" >> $GITHUB_OUTPUT
         elif [[ `gem list -i "^rubocop$"` != "true" ]]; then
           echo "gem rubocop is not installed"
-          echo "::set-output name=rubocop_was_installed::true"
+          echo "rubocop_was_installed=true" >> $GITHUB_OUTPUT
           gem install rubocop -v '${{ inputs.rubocop-version }}'
         else
           echo "Rubocop is already installed:"
           gem list "^rubocop$"
-          echo "::set-output name=rubocop_was_installed::false"
+          echo "rubocop_was_installed=false" >> $GITHUB_OUTPUT
         fi
 
     # actions/runner#646: you cannot use `if` conditional either...
@@ -200,8 +200,8 @@ runs:
             os.remove('rubocop.json')
 
             print(json.dumps(data['summary'], indent=4, sort_keys=True))
-            print(f"::set-output name=summary::'{json.dumps(data['summary'])}'")
-
+            with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+                f.write(f"summary={json.dumps(data['summary'])}\n")
             return data
 
 
@@ -257,8 +257,8 @@ runs:
                     data['summary']['offense_count']),
                 'annotations': annotations
             }
-
-            print(f"::set-output name=all_output::'{json.dumps(output)}'")
+            with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+                f.write(f"all_output={json.dumps(output)}\n")
             return conclusion, output
 
 

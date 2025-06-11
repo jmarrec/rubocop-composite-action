@@ -1,9 +1,11 @@
 def aBadMethodName(a = nil)
-  return false if a.nil?
+  if a.nil?
+    return false
+  end
 
   if a = 5
     return false
   end
 
-  true
+  return true
 end
